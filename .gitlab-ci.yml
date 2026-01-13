@@ -1,0 +1,32 @@
+stages:
+  - sast
+  - python_security
+  - dependencies
+  - container_scan
+
+# Analyse SAST Python
+bandit_scan:
+  stage: python_security
+  image: python:3.11
+  script:
+    - pip install bandit
+    - bandit -r . -ll
+  allow_failure: false
+
+# Scan dépendances
+safety_scan:
+  stage: dependencies
+  image: python:3.11
+  script:
+    - pip install safety
+    - safety check
+  allow_failure: false
+
+# Scan image Docker
+
+trivy_scan:
+  stage: container_scan
+  image: aquasec/trivy
+  script:
+    - trivy fs .
+  allow_failure: false
