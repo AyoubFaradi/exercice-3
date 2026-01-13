@@ -8,47 +8,47 @@ on:
 permissions:
   contents: read
   security-events: write
-  actions: read
 
 jobs:
   devsecops:
     runs-on: ubuntu-latest
 
     steps:
-    # ---------------- Checkout ----------------
+    # =========================
+    # Checkout du code
+    # =========================
     - name: Checkout source code
       uses: actions/checkout@v4
 
-    # ---------------- Python setup ----------------
+    # =========================
+    # Setup Python
+    # =========================
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
         python-version: "3.11"
 
-    # ---------------- SAST - CodeQL ----------------
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: python
+    # =========================
+    # SAST Python (Bandit)
+    # =========================
+    - name: Bandit - SAST Python
+      run: |
+        pip install bandit
+        bandit -r . -ll
 
-    - name: Run CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+    # =========================
+    # Scan dépendances (Safety)
+    # =========================
+    - name: Safety - Dependency Scan
+      run: |
+        pip install safety
+        safety check
 
-    # ---------------- SAST - Bandit ----------------
-    - name: Install Bandit
-      run: pip install bandit
-
-    - name: Run Bandit Security Scan
-      run: bandit -r api --severity-level high --confidence-level high || true
-
-    # ---------------- Docker build ----------------
-    - name: Build Docker Image
-      run: docker build -t devsecops-api:latest .
-
-    # ----------------  Image Scan ----------------
-    - name: Trivy Image Security Scan
+    # =========================
+    # Scan Docker / FS (Trivy)
+    # =========================
+    - name: Trivy - Security Scan
       uses: aquasecurity/trivy-action@0.20.0
       with:
-        image-ref: devsecops-api:latest
-        severity: HIGH,CRITICAL
-        exit-code: 0
+        scan-type: fs
+        scan-ref: .
