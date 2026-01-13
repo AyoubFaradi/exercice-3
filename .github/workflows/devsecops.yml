@@ -14,39 +14,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # =========================
-    # Checkout du code
-    # =========================
+
     - name: Checkout source code
       uses: actions/checkout@v4
 
-    # =========================
-    # Setup Python
-    # =========================
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
         python-version: "3.11"
 
-    # =========================
     # SAST Python (Bandit)
-    # =========================
     - name: Bandit - SAST Python
       run: |
         pip install bandit
         bandit -r . -ll
 
-    # =========================
     # Scan dépendances (Safety)
-    # =========================
     - name: Safety - Dependency Scan
       run: |
         pip install safety
         safety check
 
-    # =========================
     # Scan Docker / FS (Trivy)
-    # =========================
     - name: Trivy - Security Scan
       uses: aquasecurity/trivy-action@0.20.0
       with:
